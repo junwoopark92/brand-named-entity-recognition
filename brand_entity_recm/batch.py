@@ -3,6 +3,8 @@ import numpy as np
 import random
 import re
 from tensorflow import logging
+
+
 def check_stopwords(text, stopwords):
     for word in stopwords:
         if word in text:

@@ -4,6 +4,8 @@ from tensorflow.python.client import device_lib
 import tensorflow.contrib.slim as slim
 from brand_entity_recm.models import BIRNNModel
 from brand_entity_recm.batch import Dataset
+
+
 import random
 
 def get_gpus():
@@ -129,7 +131,9 @@ def train():
     print(param)
     build_graph(param)
 
-    sess = tf.Session()
+    saver = tf.train.Saver()
+
+    sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
     sess.run(tf.global_variables_initializer())
 
     global_step = tf.get_collection('global_step')[0]
@@ -158,6 +162,8 @@ def train():
 
             except StopIteration:
                 break
+
+    saver.save(sess, 'model/last_ner_model')
 
 
 if __name__ == '__main__':
