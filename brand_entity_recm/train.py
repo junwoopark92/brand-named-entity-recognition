@@ -1,17 +1,19 @@
 import tensorflow as tf
+import sys
+sys.path.append('..')
 from tensorflow import logging
 from tensorflow.python.client import device_lib
 import tensorflow.contrib.slim as slim
 from brand_entity_recm.models import BIRNNModel
 from brand_entity_recm.batch import Dataset
-
-
 import random
+
 
 def get_gpus():
   local_device_protos = device_lib.list_local_devices()
   gpus = [x.name for x in local_device_protos if x.device_type == 'GPU']
   return gpus
+
 
 def combine_gradients(tower_grads):
   """Calculate the combined gradient for each shared variable across all towers.
@@ -24,6 +26,7 @@ def combine_gradients(tower_grads):
      List of pairs of (gradient, variable) where the gradient has been summed
      across all towers.
   """
+
   filtered_grads = [[x for x in grad_list if x[0] is not None] for grad_list in tower_grads]
   final_grads = []
   for i in range(len(filtered_grads[0])):
@@ -33,7 +36,6 @@ def combine_gradients(tower_grads):
     final_grads.append((grad, filtered_grads[0][i][1],))
 
   return final_grads
-
 
 
 def build_graph(param_dict):
@@ -133,7 +135,7 @@ def train():
 
     saver = tf.train.Saver()
 
-    sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+    sess = tf.Session(config=tf.ConfigProto(log_device_placement=True, allow_soft_placement=True))
     sess.run(tf.global_variables_initializer())
 
     global_step = tf.get_collection('global_step')[0]
@@ -152,11 +154,11 @@ def train():
         while True:
             try:
                 x_batch, y_batch, w_batch = next(dataset.iterator)
-                _, global_step_val, loss_val = sess.run([train_op, global_step, loss], feed_dict={x:x_batch,y:y_batch, w:w_batch, keep_probs:0.5})
+                _, global_step_val, loss_val = sess.run([train_op, global_step, loss], feed_dict={x: x_batch, y:y_batch, w:w_batch, keep_probs:0.5})
                 print(epoch, global_step_val, loss_val)
 
-                x_test, y_test, w_test, row = dataset.row2input(random.choice(range(50000)),1)
-                test_case = sess.run(preds, feed_dict={x:x_test,y:y_test,w:w_test,keep_probs:1})
+                x_test, y_test, w_test, row = dataset.row2input(random.choice(range(10000)), 2, train=False)
+                test_case = sess.run(preds, feed_dict={x: x_test, y: y_test, w: w_test, keep_probs: 1})
                 print(row['proc_prdnm'].iloc[0], ' : ', row['proc_attr'].iloc[0])
                 print(''.join(test_case[0].astype(str)))
 

@@ -19,6 +19,7 @@ class BIRNNModel(BaseModel):
         shape = [param['vocab_size'], param['emb_size']]
         initializer = tf.contrib.layers.variance_scaling_initializer(uniform=True, dtype=tf.float32)
         emb_mat = tf.get_variable("emb", shape, initializer=initializer, dtype=tf.float32)
+        print(emb_mat.shape)
         ## embedding added
 
         input_emb = tf.nn.embedding_lookup(emb_mat, model_input)  # [batch_size, sent_len, emb_dim]
